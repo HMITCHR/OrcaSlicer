@@ -45,11 +45,13 @@ bool input_pending()
 #endif
 }
 
-// True inside a wxYield(), where a slice would build pages in the middle of the code that yielded.
+// True inside a wxYield() or a nested loop such as a modal dialog's, where a slice would build pages in
+// the middle of the code that is waiting. A new web view waits for WebKit in a yield loop; if the dialog
+// closes meanwhile, macOS aborts its modal session, the reply never arrives and the app hangs.
 bool yielding()
 {
     const wxEventLoopBase* loop = wxEventLoopBase::GetActive();
-    return loop != nullptr && loop->IsYielding();
+    return loop != nullptr && (loop->IsYielding() || !loop->IsMain());
 }
 
 } // namespace
