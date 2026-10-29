@@ -48,7 +48,7 @@ bool input_pending()
 // True inside a wxYield() or a nested loop such as a modal dialog's, where a slice would build pages in
 // the middle of the code that is waiting. A new web view waits for WebKit in a yield loop; if the dialog
 // closes meanwhile, macOS aborts its modal session, the reply never arrives and the app hangs.
-bool yielding()
+bool in_nested_loop()
 {
     const wxEventLoopBase* loop = wxEventLoopBase::GetActive();
     return loop != nullptr && (loop->IsYielding() || !loop->IsMain());
@@ -81,7 +81,7 @@ void IdleScheduler::tick()
         stop();
         return;
     }
-    if (m_input_idle_ms() < quiet_ms || input_pending() || yielding()) {
+    if (m_input_idle_ms() < quiet_ms || input_pending() || in_nested_loop()) {
         start();
         return;
     }
